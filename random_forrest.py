@@ -57,6 +57,9 @@ class DecisionLeaf:
 
 
 def entropy(k_counts):
+    """
+    info_gain helper func
+    """
     p = k_counts[k_counts!=0] / np.sum(k_counts)
     return -np.sum(p * np.log2(p))
 
