@@ -1,4 +1,4 @@
-,shortness of breath,bone_pain,fever,family_history,frequent_infections,Itchy_skin_or_rash,loss_of_appetite_or_nausea,Persistent_weakness _and_fatigue,"swollen,painless_lymph","significant_bruising,bleeding",enlarged_liver,oral_cavity,vision_blurring,jaundice,night_sweats,smokes,leukemia
+row,shortness of breath,bone_pain,fever,family_history,frequent_infections,Itchy_skin_or_rash,loss_of_appetite_or_nausea,Persistent_weakness _and_fatigue,"swollen,painless_lymph","significant_bruising,bleeding",enlarged_liver,oral_cavity,vision_blurring,jaundice,night_sweats,smokes,leukemia
 131,1,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1
 132,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 133,1,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0

@@ -245,6 +245,76 @@ def compute_metrics(y_true, y_pred):
     }
 
 
+class random_forest:
+    def __init__(self, num_trees: int, num_attrs: int, X: pd.DataFrame, y: pd.Series):
+        """Create branching node in decision tree
+
+        Args:
+            attr (str): Splitting attribute
+            branches (Dict[Any, DecisionNode]): Children nodes for each possible value of `attr`
+        """
+        self.num_trees = num_trees
+        self.num_attrs = num_attrs
+        self.X = X
+        self.y = y
+        self.results = {}
+        #Do we need to initialize our forrest as a variable to keep track of it?
+    
+    def load_random_attributes(y: pd.Series, num_attrs: int) -> pd.Series:
+        """
+        Return a smaller number of randomly selected columns of the list of attributes for creating our trees
+        """
+        pass
+
+    #Do we also make a helper function to choose random rows? How complicated is that?
+    
+    def add_trees(self, X: pd.DataFrame, y: pd.Series):
+        """
+        Create a forrest of trees by randomly picking the attributes and rows for each tree
+        """
+        forrest = []
+        for _ in range(self.num_trees):
+            rand_y = self.load_random_attributes(y, self.num_attrs) #why error??
+            #rand_rows = ??
+            tree = fit(X, rand_y) #rand_rows replaces X
+            #tree = fit(X, y)
+            forrest.append(tree)
+        return forrest
+
+    def forrest_predict(self, forrest: list, X: pd.DataFrame):
+        """
+        Takes in list of trees and calculates prediction, then takes argmax across all predictions
+        """
+        for tree in forrest:
+            value = predict(tree, X)
+            self.results[tree] = value
+        return np.argmax(self.results.values())
+
+    def forrest_display(self):
+        """
+        Print out:  Percentage of trees that were 1s and 0s, 
+                    Accuracy - how much of the test data it predicted correctly 
+        """
+        
+        ones = 0
+        zeroes = 0
+        #How do we identify the 1s vs the 0s?
+        for i in self.results.value():
+            if i == 1:
+                ones += 1
+            if i == 0: 
+                zeroes += 1
+
+        print("Percentage returned positive: " + str(ones/(ones + zeroes)))
+        print("Percentage returned negative: " + str(zeroes/(ones + zeroes)))
+        pass
+
+def load_leukemia(feature_file: str, label_file: str):
+    """
+    load our data for the forrest
+    """
+    pass
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and test decision tree learner")
     parser.add_argument(
