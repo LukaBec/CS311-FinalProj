@@ -274,8 +274,8 @@ class random_forest:
         """
         forrest = []
         for _ in range(self.num_trees):
-            rand_y = self.load_random_attributes(y, self.num_attrs) #why error??
-            #rand_rows = ??
+            rand_y = self.load_random_attributes(y, self.num_attrs)
+            #rand_rows = ?? - pandas.sampling for rows
             tree = fit(X, rand_y) #rand_rows replaces X
             #tree = fit(X, y)
             forrest.append(tree)
@@ -312,6 +312,8 @@ class random_forest:
 def load_leukemia(feature_file: str, label_file: str):
     """
     load our data for the forrest
+    Similar to load_example, taking in the the labels, skipping the first line and the last label, being leukimia & splitting the column to be our y
+
     """
     pass
 
