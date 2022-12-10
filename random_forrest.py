@@ -1,10 +1,11 @@
 import argparse, os, random, sys
 from math import remainder
 from typing import Any, Dict, Sequence, Tuple, Union
+from random import sample
 import numpy as np
 import pandas as pd
 from sklearn import metrics
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, metrics
 
 # Type alias for nodes in decision tree
 DecisionNode = Union["DecisionBranch", "DecisionLeaf"]
@@ -257,27 +258,19 @@ class random_forest:
         self.num_attrs = num_attrs
         self.X = X
         self.y = y
-        self.results = {}
         #Do we need to initialize our forrest as a variable to keep track of it?
-    
-    def load_random_attributes(y: pd.Series, num_attrs: int) -> pd.Series:
-        """
-        Return a smaller number of randomly selected columns of the list of attributes for creating our trees
-        """
-        pass
-
-    #Do we also make a helper function to choose random rows? How complicated is that?
     
     def add_trees(self, X: pd.DataFrame, y: pd.Series):
         """
         Create a forrest of trees by randomly picking the attributes and rows for each tree
         """
+        num_attrs = 3
         forrest = []
         for _ in range(self.num_trees):
-            rand_y = self.load_random_attributes(y, self.num_attrs)
+            rand_y = pd.Series(sample(y, num_attrs))
+            rand_rows = X
             #rand_rows = ?? - pandas.sampling for rows
-            tree = fit(X, rand_y) #rand_rows replaces X
-            #tree = fit(X, y)
+            tree = fit(rand_rows, rand_y) #rand_rows replaces X
             forrest.append(tree)
         return forrest
 
@@ -285,37 +278,26 @@ class random_forest:
         """
         Takes in list of trees and calculates prediction, then takes argmax across all predictions
         """
+        results = []
         for tree in forrest:
-            value = predict(tree, X)
-            self.results[tree] = value
-        return np.argmax(self.results.values())
+            prediction = predict(tree, X)
+            results.append(prediction)
+        return results
+    
+    def eval(y_pred: list, y_true: pd.Series) -> float:
+        return metrics.accuracy_score(y_true, y_pred)
 
-    def forrest_display(self):
-        """
-        Print out:  Percentage of trees that were 1s and 0s, 
-                    Accuracy - how much of the test data it predicted correctly 
-        """
-        
-        ones = 0
-        zeroes = 0
-        #How do we identify the 1s vs the 0s?
-        for i in self.results.value():
-            if i == 1:
-                ones += 1
-            if i == 0: 
-                zeroes += 1
-
-        print("Percentage returned positive: " + str(ones/(ones + zeroes)))
-        print("Percentage returned negative: " + str(zeroes/(ones + zeroes)))
-        pass
-
-def load_leukemia(feature_file: str, label_file: str):
+def load_leukemia(feature_file: str, label_file: str, **kwargs):
     """
     load our data for the forrest
     Similar to load_example, taking in the the labels, skipping the first line and the last label, being leukimia & splitting the column to be our y
 
     """
-    pass
+    return (
+        pd.read_table(feature_file, dtype="category", usecols=[i for i in feature_file if i != feature_file.index(0) or i != feature_file.index(-1)]),
+        pd.read_table(label_file, **kwargs, usecols=[i for i in label_file if i != "rows" or i != "leukemia"]).squeeze().rename("label"),
+    )
+        #pd.read_table(label_file, **kwargs).squeeze().rename("label"),
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and test decision tree learner")
@@ -339,25 +321,29 @@ if __name__ == "__main__":
     if args.prefix != "adult":
         # Derive input files names for test sets
         train_data_file = os.path.join(
-            os.path.dirname(__file__), "data", f"{args.prefix}.train_data.txt"
+            os.path.dirname(__file__), "data", f"{args.prefix}_train_data.txt"
         )
         train_labels_file = os.path.join(
-            os.path.dirname(__file__), "data", f"{args.prefix}.train_label.txt"
+            os.path.dirname(__file__), "data", f"{args.prefix}_train_label.txt"
         )
-        test_data_file = os.path.join(
-            os.path.dirname(__file__), "data", f"{args.prefix}.test_data.txt"
-        )
-        test_labels_file = os.path.join(
-            os.path.dirname(__file__), "data", f"{args.prefix}.test_label.txt"
-        )
+        # test_data_file = os.path.join(
+        #     os.path.dirname(__file__), "data", f"{args.prefix}.test_data.txt"
+        # )
+        # test_labels_file = os.path.join(
+        #     os.path.dirname(__file__), "data", f"{args.prefix}.test_label.txt"
+        # )
 
         # Load training data and learn decision tree
         train_data, train_labels = load_examples(train_data_file, train_labels_file)
+        print(train_data)
+        print(train_labels)
+        """
         tree = fit(train_data, train_labels)
         tree.display()
 
         # Load test data and predict labels with previously learned tree
         test_data, test_labels = load_examples(test_data_file, test_labels_file)
+        
         pred_labels = predict(tree, test_data)
 
         # Compute and print accuracy metrics
@@ -370,6 +356,7 @@ if __name__ == "__main__":
                 val,
                 sep="",
             )
+        """
     else:
         # We use a slightly different procedure with "adult". Instead of using a fixed split, we split
         # the data k-ways (preserving the ratio of output classes) and test each split with a Decision
