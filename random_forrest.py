@@ -277,21 +277,36 @@ class random_forest:
         """
         Takes in list of trees and calculates prediction, then takes argmax across all predictions
         """
-        results = []
-        percentage = pd.DataFrame(columns=self.y.unique())
-        final = [] # argmax of prediction percentage
-        #create expected value for each tree
+
+        cols = []
+
         for tree in forest:
-            prediction = predict(tree, X)
-            results.append(prediction)
-        #create percentage dataframe for percentage of trees with expected values of 0 and 1
-        for row in range(len(X)):
-            count = [0,0]
-            for pred in results: 
-                count[int(pred[row])]+=1
-            for col in range(len(percentage.columns)):
-                percentage[col] = count[col] / np.sum(count)
-            print(percentage)
+            cols.append(pd.Series(predict(tree,X)))
+
+        predictions = pd.concat(cols, axis = 1)
+
+        probs = predictions.apply(lambda x : x.value_counts(normalize=True), axis = 1)
+
+        return probs.idxmax(axis = 1)
+
+        # results = []
+        # percentage = pd.DataFrame(columns=self.y.unique())
+        # final = [] # argmax of prediction percentage
+        # #create expected value for each tree
+        # for tree in forest:
+        #     prediction = predict(tree, X)
+        #     results.append(prediction)
+        # #create percentage dataframe for percentage of trees with expected values of 0 and 1
+        # for row in range(len(X)):
+        #     count = [0,0]
+        #     for pred in results:
+        #         count[int(pred[row])]+=1
+        #     for col in range(len(percentage.columns)):
+        #         percentage[col] = count[col] / np.sum(count)
+        #     print(percentage)
+
+
+
         #Taking argmax of each row and creating final prediction for each row.
         # for _, row in percentage.iterrows():
         #     final.append(np.argmax(row))
@@ -302,7 +317,7 @@ class random_forest:
     def eval(self, y_pred: object, y_true: pd.Series) -> float:
         return metrics.accuracy_score(y_true, y_pred)
 
-def load_leukemia(feature_file: str, label_file: str, **kwargs):
+def load_leukemia(feature_file: str):#, label_file: str, **kwargs):
     """
     load our data for the forest
     Similar to load_example, taking in the the labels, skipping the first line and the last label, being leukimia & splitting the column to be our y
@@ -338,18 +353,63 @@ if __name__ == "__main__":
         train_labels_file = os.path.join(
             os.path.dirname(__file__), "data", f"{args.prefix}_train_label.txt"
         )
-        # test_data_file = os.path.join(
-        #     os.path.dirname(__file__), "data", f"{args.prefix}.test_data.txt"
-        # )
+        test_data_file = os.path.join(
+            os.path.dirname(__file__), "data", f"{args.prefix}_test.txt"
+        )
         # test_labels_file = os.path.join(
         #     os.path.dirname(__file__), "data", f"{args.prefix}.test_label.txt"
         # )
 
         # Load training data and learn decision tree
-        train_data, train_labels = load_leukemia(train_data_file, train_labels_file)
-        forest = random_forest(5, 3, train_data, train_labels)
-        trees = forest.add_trees()
-        prediction = forest.forest_predict(trees, train_data)
+        train_data, train_labels = load_leukemia(train_data_file)#, train_labels_file)
+        test_data, test_labels = load_leukemia(test_data_file)
+        #forest = random_forest(100, 3, train_data, train_labels)
+
+        #creates forests and increments number of trees by 50, and then writes out prediction of testset to a CSV file
+        forests = []
+        forests.append(random_forest(100,3, train_data, train_labels))
+        forests.append(random_forest(150, 3, train_data, train_labels))
+        forests.append(random_forest(200, 3, train_data, train_labels))
+        forests.append(random_forest(250, 3, train_data, train_labels))
+        forests.append(random_forest(300, 3, train_data, train_labels))
+
+        treesets = {}
+        for i in forests:
+            treesets[i.num_trees] = i.add_trees()
+
+
+        f = open("experiment1.csv", "w")
+        for i in forests:
+            predictions = i.forest_predict(treesets[i.num_trees], test_data)
+            f.write(str(i.num_trees)+","+str(i.eval(predictions,test_labels))+ "\n")
+
+            # creates forests and increments number of attributes by 1, and then writes out prediction of testset to a CSV file
+            forests = []
+            forests.append(random_forest(100, 2, train_data, train_labels))
+            forests.append(random_forest(100, 3, train_data, train_labels))
+            forests.append(random_forest(100, 4, train_data, train_labels))
+            forests.append(random_forest(100, 5, train_data, train_labels))
+            forests.append(random_forest(100, 6, train_data, train_labels))
+
+            treesets = {}
+            for i in forests:
+                treesets[i.num_attrs] = i.add_trees()
+
+            f = open("experiment2.csv", "w")
+            for i in forests:
+                predictions = i.forest_predict(treesets[i.num_attrs], test_data)
+                f.write(str(i.num_attrs) + "," + str(i.eval(predictions, test_labels)) + "\n")
+
+        #trees = forest.add_trees()
+
+        #prediction = forest.forest_predict(trees, train_data)
+        #print(forest.eval(prediction, train_labels))
+
+
+        # test_data, test_labels = load_leukemia(test_data_file)
+        # prediction = forest.forest_predict(trees, test_data)
+        # print(forest.eval(prediction, test_labels))
+
         # accuracy = forest.eval(prediction, train_labels)
         # print(accuracy)
         # for index, row in train_data.iterrows():
