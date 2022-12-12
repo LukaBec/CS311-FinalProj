@@ -383,23 +383,26 @@ if __name__ == "__main__":
             predictions = i.forest_predict(treesets[i.num_trees], test_data)
             f.write(str(i.num_trees)+","+str(i.eval(predictions,test_labels))+ "\n")
 
-            # creates forests and increments number of attributes by 1, and then writes out prediction of testset to a CSV file
-            forests = []
-            forests.append(random_forest(100, 2, train_data, train_labels))
-            forests.append(random_forest(100, 3, train_data, train_labels))
-            forests.append(random_forest(100, 4, train_data, train_labels))
-            forests.append(random_forest(100, 5, train_data, train_labels))
-            forests.append(random_forest(100, 6, train_data, train_labels))
+        f.close()
 
-            treesets = {}
-            for i in forests:
-                treesets[i.num_attrs] = i.add_trees()
+        # creates forests and increments number of attributes by 1, and then writes out prediction of testset to a CSV file
+        forests = []
+        forests.append(random_forest(100, 2, train_data, train_labels))
+        forests.append(random_forest(100, 3, train_data, train_labels))
+        forests.append(random_forest(100, 4, train_data, train_labels))
+        forests.append(random_forest(100, 5, train_data, train_labels))
+        forests.append(random_forest(100, 6, train_data, train_labels))
 
-            f = open("experiment2.csv", "w")
-            for i in forests:
-                predictions = i.forest_predict(treesets[i.num_attrs], test_data)
-                f.write(str(i.num_attrs) + "," + str(i.eval(predictions, test_labels)) + "\n")
+        treesets = {}
+        for i in forests:
+            treesets[i.num_attrs] = i.add_trees()
 
+        f = open("experiment2.csv", "w")
+        for i in forests:
+            predictions = i.forest_predict(treesets[i.num_attrs], test_data)
+            f.write(str(i.num_attrs) + "," + str(i.eval(predictions, test_labels)) + "\n")
+
+        f.close()
         #trees = forest.add_trees()
 
         #prediction = forest.forest_predict(trees, train_data)
