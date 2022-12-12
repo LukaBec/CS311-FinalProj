@@ -1,11 +1,11 @@
-import argparse, os, random, sys
+import argparse, os, sys
 from math import remainder
 from typing import Any, Dict, Sequence, Tuple, Union
 from random import sample
 import numpy as np
 import pandas as pd
 from sklearn import metrics
-from sklearn.model_selection import StratifiedKFold, metrics
+from sklearn.model_selection import StratifiedKFold #, metrics
 
 # Type alias for nodes in decision tree
 DecisionNode = Union["DecisionBranch", "DecisionLeaf"]
@@ -258,46 +258,58 @@ class random_forest:
         self.num_attrs = num_attrs
         self.X = X
         self.y = y
-        #Do we need to initialize our forrest as a variable to keep track of it?
+        #Do we need to initialize our forest as a variable to keep track of it?
     
-    def add_trees(self, X: pd.DataFrame, y: pd.Series):
+    def add_trees(self):
         """
-        Create a forrest of trees by randomly picking the attributes and rows for each tree
+        Create a forest of trees by randomly picking the attributes and rows for each tree
         """
-        num_attrs = 3
-        forrest = []
+        forest = []
         for _ in range(self.num_trees):
-            rand_y = pd.Series(sample(y, num_attrs))
-            rand_rows = X
+            rand_cols = sample(list(self.X.columns), self.num_attrs)
+            #rand_rows = self.X[sample(list(self.X.columns), num_attrs)]
             #rand_rows = ?? - pandas.sampling for rows
-            tree = fit(rand_rows, rand_y) #rand_rows replaces X
-            forrest.append(tree)
-        return forrest
+            tree = fit(train_data[rand_cols], self.y) #rand_rows replaces X
+            forest.append(tree)
+        return forest
 
-    def forrest_predict(self, forrest: list, X: pd.DataFrame):
+    def forest_predict(self, forest: list, X: pd.DataFrame):
         """
         Takes in list of trees and calculates prediction, then takes argmax across all predictions
         """
         results = []
-        for tree in forrest:
+        percentage = pd.DataFrame(columns=self.y.unique())
+        final = [] # argmax of prediction percentage
+        #create expected value for each tree
+        for tree in forest:
             prediction = predict(tree, X)
             results.append(prediction)
-        return results
+        #create percentage dataframe for percentage of trees with expected values of 0 and 1
+        for row in range(len(X)):
+            count = [0,0]
+            for pred in results: 
+                count[int(pred[row])]+=1
+            for col in range(len(percentage.columns)):
+                percentage[col] = count[col] / np.sum(count)
+            print(percentage)
+        #Taking argmax of each row and creating final prediction for each row.
+        # for _, row in percentage.iterrows():
+        #     final.append(np.argmax(row))
+        # return results
+
+        
     
-    def eval(y_pred: list, y_true: pd.Series) -> float:
+    def eval(self, y_pred: object, y_true: pd.Series) -> float:
         return metrics.accuracy_score(y_true, y_pred)
 
 def load_leukemia(feature_file: str, label_file: str, **kwargs):
     """
-    load our data for the forrest
+    load our data for the forest
     Similar to load_example, taking in the the labels, skipping the first line and the last label, being leukimia & splitting the column to be our y
 
     """
-    return (
-        pd.read_table(feature_file, dtype="category", usecols=[i for i in feature_file if i != feature_file.index(0) or i != feature_file.index(-1)]),
-        pd.read_table(label_file, **kwargs, usecols=[i for i in label_file if i != "rows" or i != "leukemia"]).squeeze().rename("label"),
-    )
-        #pd.read_table(label_file, **kwargs).squeeze().rename("label"),
+    data = pd.read_table(feature_file, sep=",", dtype="category").drop(["row"], axis=1)
+    return (data.drop(["leukemia"], axis=1), data["leukemia"])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and test decision tree learner")
@@ -334,10 +346,17 @@ if __name__ == "__main__":
         # )
 
         # Load training data and learn decision tree
-        train_data, train_labels = load_examples(train_data_file, train_labels_file)
-        print(train_data)
-        print(train_labels)
+        train_data, train_labels = load_leukemia(train_data_file, train_labels_file)
+        forest = random_forest(5, 3, train_data, train_labels)
+        trees = forest.add_trees()
+        prediction = forest.forest_predict(trees, train_data)
+        # accuracy = forest.eval(prediction, train_labels)
+        # print(accuracy)
+        # for index, row in train_data.iterrows():
+        #     print(row)
+
         """
+        train_data, train_labels = load_examples(train_data_file, train_labels_file)
         tree = fit(train_data, train_labels)
         tree.display()
 
