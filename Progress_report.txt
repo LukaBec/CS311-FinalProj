@@ -1,0 +1,42 @@
+Wed, Nov 2
+    ~1hr
+-Wanted to get the basic idea of our project down.
+-Understood the problem we wanted to tackle & the potential data we would use
+
+Mon, Nov 28
+    ~1hr
+-Wanted to look over suggestions made for our project and make any changes for progress report
+-Broadened potential data to individuals with leukemia and specified the use of a random forrest
+    ~1hr
+-Wanted to find actual data for our project
+-Found a couple of interesting articles, nothing substantive. finished progress report
+
+Sun, Dec 4
+    ~1.5hr
+-Wanted to get the basic framework of our code done.
+-Worked together to create random forest class and add trees function
+    ~1hr
+-wanted to continue working on our add tree method and others
+-added predict, and display functions, and a load data function. Nothing worked, but scaffolding was set
+
+Fri, Dec 9
+    ~1hr
+-Wanted to go over any questions that arose during development with Professor Linderman during our meeting
+-Better understood how to approach random sampling of our data and how to potentially load the data. Need to work on predict and creating an eval function.
+
+Sat, Dec 10
+    ~2hr
+-Wanted to implement changes and suggestions from previous meeting
+-Worked together to updata the add trees function, did some work on our prediction, got stuck trying to figure out how to load in our data and emailed Pofessor Linderman
+
+Sun, Dec 11
+    ~1hr
+-Wanted to implement change for reading in our data, test our forest functions and start experiments
+-Predict function proved to be a major hurdle to understand the accuracy. 
+    ~1hr
+-Wanted to finish as many functions as possible
+-Have most of the work done other than finished predict and eval function, emailed Professor Linderman for help
+
+Mon, Dec 12
+-Wanted to implement changes suggested by Professor Linderman and run experiments
+-Got the diary done while Mead ran experiments and recorded data.
